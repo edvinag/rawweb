@@ -2,7 +2,7 @@ from flask import Flask, json, request, jsonify
 from flask_cors import CORS
 
 gps = {"gps": {"location": {"longitude": 11.462431, "latitude": 58.197761}, "course": 45}}
-routeInfo = {"longitude": 11.462431, "latitude": 58.197761, "course": 45, "refcourse": 45, "reflongitude": 11.467781080864368, "reflatitude": 58.19432362991195,}
+routeInfo = {"longitude": 11.462431, "latitude": 58.197761, "course": 45, "refcourse": 45, "goallongitude": 11.467781080864368, "goallatitude": 58.19432362991195,}
 api = Flask(__name__)
 CORS(api)
 
