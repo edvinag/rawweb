@@ -2,7 +2,7 @@
 <html>
 
 <head>
-	<title>MarineTraffic and OpenSeaMap</title>
+	<title>RawCat</title>
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -35,13 +35,22 @@
 	<script src="http://rawgithub.com/mlevans/leaflet-hash/master/leaflet-hash.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
 	<script src="http://www.jacklmoore.com/colorbox/jquery.colorbox.js"></script>
-
+	<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 	<div id="map"></div>
+	<!-- <button class="button" style="color: #2196F3;" id="refreshButton">Refresh Button</button> -->
+	<div class="leafletButton">
+		<label class="container">Follow
+			<input type="checkbox" checked="checked" id="follow">
+			<span class="checkmark"></span>
+		  </label>
+		  <button class="button" style="background-color: #2196F3; color:whitesmoke" id="refreshButton" onclick="fitToRoute()">Fit to Route</button>
+	</div>
 	<script src="geojson.js" type="text/javascript"></script>
 	<script type="text/javascript">
+		
 		//<![CDATA[
 		(function ($) {
 			$(function () {
@@ -60,11 +69,37 @@
 
 				openseamap = new L.TileLayer('http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-				var route = new L.geoJson(routeLine, {
-					style: function (feature) {
-						return feature.properties.style;
-					}
-				}).addTo(map);
+				var latlngs = [
+					[0, 0],
+					[0, 0]
+				];
+
+				var route = L.polyline(latlngs, {
+					 color: '#214F5D',
+					 weight: 5,
+					 opacity: 0.8
+					}).addTo(map);
+
+				route.on('click', function (e) {
+					$.colorbox({
+						href: "route.html",
+						iframe: true,
+						width: '80%',
+						height: '80%'
+					});
+				});
+
+				var xhttpRoute = new XMLHttpRequest();
+				xhttpRoute.onreadystatechange = function () {
+					var obj = JSON.parse(this.responseText)
+					var array = []
+					obj.geometry.coordinates.forEach(function (coordinate) {
+						array.push([coordinate[1], coordinate[0]]);
+					});
+					route.setLatLngs(array)
+				};
+				xhttpRoute.open("GET", "http://127.0.0.1:5000/route", true);
+				xhttpRoute.send();
 
 				var layersControl = new L.Control.Layers({
 					'Positron': positron
@@ -72,7 +107,7 @@
 					'OpenSeaMap': openseamap,
 					'Route': route
 				}).addTo(map);
-				
+
 				var boatIcon = new L.Icon({
 					iconUrl: 'marker.png',
 					shadowUrl: null,
@@ -80,23 +115,51 @@
 					iconAnchor: new L.Point(9, 13)
 				});
 
-				var boat = L.marker([0, 0], {icon: boatIcon}).addTo(map);
+				var boat = L.marker([0, 0], { icon: boatIcon }).addTo(map);
+				boat.on('click', function (e) {
+					$.colorbox({
+						href: "boat.html",
+						iframe: true,
+						width: '80%',
+						height: '80%'
+					});
+				});
 
-				var markerGroup = new L.LayerGroup();
+				var polyline = L.polyline(latlngs, { color: 'red' }).addTo(map);
 
 				function loadBoat() {
 					var xhttp = new XMLHttpRequest();
 					xhttp.onreadystatechange = function () {
 						obj = JSON.parse(this.responseText);
-						console.log(obj.gps.location.latitude)
-						boat.setLatLng([obj.gps.location.latitude, obj.gps.location.longitude])
-						boat.setIconAngle(obj.gps.course)
+						console.log(obj)
+						boat.setLatLng([obj.latitude, obj.longitude])
+						boat.setIconAngle(obj.course)
+
+						latlngs = [
+							[obj.latitude, obj.longitude],
+							[obj.reflatitude, obj.reflongitude]
+						];
+						polyline.setLatLngs(latlngs)
+
+						var follow = document.getElementById("follow");
+						// if(follow.checked == true){
+						// 	console.log("fly")
+						// 	map.panTo(boat.getLatLng())
+						// }
 					};
-					xhttp.open("GET", "http://127.0.0.1:5000/gps", true);
+					xhttp.open("GET", "http://127.0.0.1:5000/routeInfo", true);
 					xhttp.send();
 				}
 				loadBoat();
-				var myVar = setInterval(loadBoat, 5000);
+				var myVar = setInterval(loadBoat, 1000);
+				
+				// var myVar = setInterval(loadBoat, 5000);
+
+
+				// function fitToRoute(){
+				// 	console.log("hejhej")
+				// 	map.fitBounds(route.getBounds())
+				// }
 
 			});
 		})(jQuery);

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body style="background-color:#1c2833;">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script type="text/javascript" src="./dist/jquery.json-editor.min.js"></script>
+  <h1 style="color:#116a6f;">RawCat</h1>
+  <h2 style="color:#116a6f;">Data</h2>
+  <pre id="json-display-data"></pre>
+  <h2 style="color:#116a6f;">Settings</h2>
+  <pre id="json-display-settings"></pre>
+  <button class="button jsonButton buttonShadow" onclick="readCopy()">From Clipboard</button>
+  <button class="button jsonButton buttonShadow" onclick="postSettings()">Upload Settings</button>
+  <script>
+    var obj = null
+    var editorSettings = null
+
+    function readCopy() {
+      navigator.clipboard.readText()
+        .then(text => {
+          editorSettings = new JsonEditor('#json-display-settings', JSON.parse(text));
+        })
+        .catch(err => {
+          console.error('Failed to read clipboard contents: ', err);
+        });
+
+    }
+
+    function load() {
+      var xhttpData = new XMLHttpRequest();
+      xhttpData.onreadystatechange = function () {
+        var editorData = new JsonEditor('#json-display-data', JSON.parse(this.responseText));
+      };
+      xhttpData.open("GET", "http://127.0.0.1:5000/data", true);
+      xhttpData.send();
+
+      var xhttpSettings = new XMLHttpRequest();
+      xhttpSettings.onreadystatechange = function () {
+        editorSettings = new JsonEditor('#json-display-settings', JSON.parse(this.responseText));
+      };
+      xhttpSettings.open("GET", "http://127.0.0.1:5000/settings", true);
+      xhttpSettings.send();
+    }
+
+    function postSettings(){
+      var xhttp = new XMLHttpRequest();
+      xhttp.open("POST", "http://127.0.0.1:5000/settings", true);
+      xhttp.setRequestHeader("Content-type", "application/json");
+      xhttp.send(editorSettings.$container[0].outerText);
+    }
+
+    load();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body style="background-color:#1c2833;">
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script type="text/javascript" src="./dist/jquery.json-editor.min.js"></script>
+  <h1 style="color:#116a6f;">RawCat Route</h1>
+  <pre id="json-display" style="width: 30%;"></pre>
+  <button class="button jsonButton buttonShadow" onclick="readCopy()">From Clipboard</button>
+  <button class="button jsonButton buttonShadow" onclick="postRoute()">Upload Route</button>
+  <script>
+    var obj = null
+    var editor = null
+    function readCopy() {
+      navigator.clipboard.readText()
+        .then(text => {
+          editor = new JsonEditor('#json-display', JSON.parse(text));
+        })
+        .catch(err => {
+          console.error('Failed to read clipboard contents: ', err);
+        });
+
+    }
+
+    function loadRoute() {
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        editor = new JsonEditor('#json-display', JSON.parse(this.responseText));
+      };
+      xhttp.open("GET", "http://127.0.0.1:5000/route", true);
+      xhttp.send();
+    }
+
+    function postRoute(){
+      var xhttp = new XMLHttpRequest();
+      xhttp.open("POST", "http://127.0.0.1:5000/route", true);
+      xhttp.setRequestHeader("Content-type", "application/json");
+      xhttp.send(editor.$container[0].outerText);
+    }
+    loadRoute();
+
+  </script>
+</body>
+
+</html>
