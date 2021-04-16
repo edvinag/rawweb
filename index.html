@@ -6,7 +6,7 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
 	<link rel="stylesheet" href="http://www.jacklmoore.com/colorbox/example1/colorbox.css" />
 	<style type="text/css">
 		html,
@@ -30,7 +30,7 @@
 			float: left;
 		}
 	</style>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
 	<script src="http://rawgithub.com/shramov/leaflet-plugins/master/layer/Marker.Rotate.js"></script>
 	<script src="http://rawgithub.com/mlevans/leaflet-hash/master/leaflet-hash.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
@@ -45,12 +45,13 @@
 		<label class="container">Follow
 			<input type="checkbox" checked="checked" id="follow">
 			<span class="checkmark"></span>
-		  </label>
-		  <button class="button" style="background-color: #2196F3; color:whitesmoke" id="refreshButton" onclick="fitToRoute()">Fit to Route</button>
+		</label>
+		<!-- <button class="button" style="background-color: #2196F3; color:whitesmoke" id="refreshButton"
+			onclick="flyToRoute()">Fit to Route</button> -->
 	</div>
 	<script src="geojson.js" type="text/javascript"></script>
 	<script type="text/javascript">
-		
+
 		//<![CDATA[
 		(function ($) {
 			$(function () {
@@ -65,6 +66,27 @@
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
 					subdomains: 'abcd',
 					maxZoom: 19
+				})
+
+				// https://map02.eniro.no/geowebcache/service/tms1.0.0/nautical2x/15/17458/22843.png?c=3854509113&v=20200602
+				var nautical = L.tileLayer("https://map02.eniro.no/geowebcache/service/tms1.0.0/nautical2x/{z}/{x}/{y}.{type}?c=crc&v={tileVersion}", {
+					attribution: "",
+					errorTileUrl: "",
+					layer: "nautical2x",
+					maxZoom: 17,
+					minZoom: 3,
+					noWrap: true,
+					opacity: 1,
+					reuseTiles: false,
+					subdomains: ["map01", "map02", "map03", "map04"],
+					tileSize: 256,
+					tileVersion: "20200602",
+					tms: true,
+					type: "png",
+					unloadInvisibleTiles: false,
+					updateWhenIdle: false,
+					zIndex: 0,
+					zoomOffset: 0
 				}).addTo(map);
 
 				openseamap = new L.TileLayer('http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
@@ -75,10 +97,10 @@
 				];
 
 				var route = L.polyline(latlngs, {
-					 color: '#214F5D',
-					 weight: 5,
-					 opacity: 0.8
-					}).addTo(map);
+					color: '#214F5D',
+					weight: 5,
+					opacity: 0.8
+				}).addTo(map);
 
 				route.on('click', function (e) {
 					$.colorbox({
@@ -102,7 +124,8 @@
 				xhttpRoute.send();
 
 				var layersControl = new L.Control.Layers({
-					'Positron': positron
+					'Positron': positron,
+					'Nautical': nautical
 				}, {
 					'OpenSeaMap': openseamap,
 					'Route': route
@@ -142,25 +165,20 @@
 						polyline.setLatLngs(latlngs)
 
 						var follow = document.getElementById("follow");
-						// if(follow.checked == true){
-						// 	console.log("fly")
-						// 	map.panTo(boat.getLatLng())
-						// }
+						if(follow.checked == true){
+							console.log("fly")
+							map.flyTo(boat.getLatLng())
+						}
 					};
 					xhttp.open("GET", "http://127.0.0.1:5000/routeInfo", true);
 					xhttp.send();
 				}
 				loadBoat();
 				var myVar = setInterval(loadBoat, 1000);
-				
-				// var myVar = setInterval(loadBoat, 5000);
 
-
-				// function fitToRoute(){
-				// 	console.log("hejhej")
-				// 	map.fitBounds(route.getBounds())
-				// }
-
+				function flyToRoute(){
+					map.flyToBounds(route.getBounds())
+				};
 			});
 		})(jQuery);
 //]]>
