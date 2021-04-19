@@ -37,20 +37,20 @@
       xhttpData.onreadystatechange = function () {
         var editorData = new JsonEditor('#json-display-data', JSON.parse(this.responseText));
       };
-      xhttpData.open("GET", "http://127.0.0.1:5000/data", true);
+      xhttpData.open("GET", "http://http://172.20.10.9//data", true);
       xhttpData.send();
 
       var xhttpSettings = new XMLHttpRequest();
       xhttpSettings.onreadystatechange = function () {
         editorSettings = new JsonEditor('#json-display-settings', JSON.parse(this.responseText));
       };
-      xhttpSettings.open("GET", "http://127.0.0.1:5000/settings", true);
+      xhttpSettings.open("GET", "http://http://172.20.10.9//settings", true);
       xhttpSettings.send();
     }
 
     function postSettings(){
       var xhttp = new XMLHttpRequest();
-      xhttp.open("POST", "http://127.0.0.1:5000/settings", true);
+      xhttp.open("POST", "http://http://172.20.10.9//settings", true);
       xhttp.setRequestHeader("Content-type", "application/json");
       xhttp.send(editorSettings.$container[0].outerText);
     }

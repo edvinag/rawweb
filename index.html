@@ -40,22 +40,14 @@
 
 <body>
 	<div id="map"></div>
-	<!-- <button class="button" style="color: #2196F3;" id="refreshButton">Refresh Button</button> -->
-	<div class="leafletButton">
-		<label class="container">Follow
-			<input type="checkbox" checked="checked" id="follow">
-			<span class="checkmark"></span>
-		</label>
-		<!-- <button class="button" style="background-color: #2196F3; color:whitesmoke" id="refreshButton"
-			onclick="flyToRoute()">Fit to Route</button> -->
-	</div>
 	<script src="geojson.js" type="text/javascript"></script>
 	<script type="text/javascript">
 
 		//<![CDATA[
 		(function ($) {
 			$(function () {
-
+				var follow = true;
+				var darkmode = true;
 				var map = new L.Map('map').setView([58.198395, 11.466894], 16);
 
 				map.attributionControl.setPrefix('').addAttribution('Map data &copy; <a href="http://www.marinetraffic.com">MarineTraffic</a>');
@@ -66,7 +58,7 @@
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
 					subdomains: 'abcd',
 					maxZoom: 19
-				})
+				}).addTo(map);
 
 				// https://map02.eniro.no/geowebcache/service/tms1.0.0/nautical2x/15/17458/22843.png?c=3854509113&v=20200602
 				var nautical = L.tileLayer("https://map02.eniro.no/geowebcache/service/tms1.0.0/nautical2x/{z}/{x}/{y}.{type}?c=crc&v={tileVersion}", {
@@ -87,13 +79,104 @@
 					updateWhenIdle: false,
 					zIndex: 0,
 					zoomOffset: 0
-				}).addTo(map);
+				})
 
 				openseamap = new L.TileLayer('http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
+				var followControl = L.Control.extend({
+
+					options: {
+						position: 'bottomright'
+					},
+
+					onAdd: function (map) {
+						var container = L.DomUtil.create('p');
+						container.type = "button";
+						container.title = "Follow RawCat";
+
+						container.style.backgroundColor = 'transparent';
+						container.style.backgroundImage = "url(follow.png)";
+						container.style.backgroundSize = "30px 30px";
+						container.style.width = '30px';
+						container.style.height = '30px';
+						container.onclick = function () {
+							follow = !follow
+							if (follow) {
+								container.style.backgroundImage = "url(follow.png)";
+							}
+							else {
+								container.style.backgroundImage = "url(notfollow.png)";
+							}
+						}
+						return container;
+					}
+				});
+
+				var seeRouteControl = L.Control.extend({
+
+					options: {
+						position: 'bottomright'
+					},
+
+					onAdd: function (map) {
+						var container = L.DomUtil.create('p');
+						container.type = "button";
+						container.title = "Go to route RawCat";
+
+						container.style.backgroundColor = 'transparent';
+						container.style.backgroundImage = "url(route.png)";
+						container.style.backgroundSize = "30px 30px";
+						container.style.width = '30px';
+						container.style.height = '30px';
+						container.onclick = function () {
+							map.flyToBounds(route.getBounds())
+
+						}
+						return container;
+					}
+				});
+
+				// var offon = L.Control.extend({
+
+				// 	options: {
+				// 		position: 'bottomleft'
+				// 	},
+
+				// 	onAdd: function (map) {
+				// 		var container = L.DomUtil.create('p');
+				// 		container.type = "button";
+				// 		container.title = "off/on";
+
+				// 		container.style.backgroundColor = 'transparent';
+				// 		container.style.backgroundImage = "url(off.png)";
+				// 		container.style.backgroundSize = "30px 30px";
+				// 		container.style.width = '30px';
+				// 		container.style.height = '30px';
+				// 		container.onclick = function () {
+
+				// 			var xhttpOnOff = new XMLHttpRequest();
+				// 			xhttpOnOff.onreadystatechange = function () {
+				// 				var obj = JSON.parse(this.responseText)
+				// 				darkmode = obj.;
+				// 				if (darkmode) {
+				// 					container.style.backgroundImage = "url(off.png)";
+				// 				}
+				// 				else {
+				// 					container.style.backgroundImage = "url(on.png)";
+				// 				}
+				// 			};
+				// 			xhttpOnOff.open("GET", "http://http://172.20.10.9//data", true);
+				// 			xhttpOnOff.send();
+
+
+				// 		}
+				// 		return container;
+				// 	}
+				// });
+
 				var latlngs = [
-					[0, 0],
-					[0, 0]
+					[58.198395, 11.466894],
+					[58.198395, 11.466894]
 				];
 
 				var route = L.polyline(latlngs, {
@@ -120,16 +203,9 @@
 					});
 					route.setLatLngs(array)
 				};
-				xhttpRoute.open("GET", "http://127.0.0.1:5000/route", true);
+				xhttpRoute.open("GET", "http://http://172.20.10.9//route", true);
 				xhttpRoute.send();
 
-				var layersControl = new L.Control.Layers({
-					'Positron': positron,
-					'Nautical': nautical
-				}, {
-					'OpenSeaMap': openseamap,
-					'Route': route
-				}).addTo(map);
 
 				var boatIcon = new L.Icon({
 					iconUrl: 'marker.png',
@@ -148,7 +224,23 @@
 					});
 				});
 
-				var polyline = L.polyline(latlngs, { color: 'red' }).addTo(map);
+				var goalDirection = L.polyline(latlngs, {
+					color: 'red',
+					weight: 5,
+					opacity: 0.4
+				});
+
+				var layersControl = new L.Control.Layers({
+					'Positron': positron,
+					'Nautical': nautical
+				}, {
+					'OpenSeaMap': openseamap,
+					'Route': route,
+					"Goal direction": goalDirection
+				}).addTo(map);
+				map.addControl(new followControl());
+				map.addControl(new seeRouteControl());
+				map.addControl(new offon());
 
 				function loadBoat() {
 					var xhttp = new XMLHttpRequest();
@@ -162,23 +254,20 @@
 							[obj.latitude, obj.longitude],
 							[obj.goallatitude, obj.goallongitude]
 						];
-						polyline.setLatLngs(latlngs)
+						goalDirection.setLatLngs(latlngs)
 
-						var follow = document.getElementById("follow");
-						if(follow.checked == true){
+						// var follow = document.getElementById("follow");
+						if (follow) {
 							console.log("fly")
 							map.flyTo(boat.getLatLng())
 						}
 					};
-					xhttp.open("GET", "http://127.0.0.1:5000/routeInfo", true);
+					xhttp.open("GET", "http://http://172.20.10.9//routeInfo", true);
 					xhttp.send();
 				}
 				loadBoat();
 				var myVar = setInterval(loadBoat, 1000);
 
-				function flyToRoute(){
-					map.flyToBounds(route.getBounds())
-				};
 			});
 		})(jQuery);
 //]]>

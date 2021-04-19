@@ -34,13 +34,13 @@
       xhttp.onreadystatechange = function () {
         editor = new JsonEditor('#json-display', JSON.parse(this.responseText));
       };
-      xhttp.open("GET", "http://127.0.0.1:5000/route", true);
+      xhttp.open("GET", "http://http://172.20.10.9//route", true);
       xhttp.send();
     }
 
     function postRoute(){
       var xhttp = new XMLHttpRequest();
-      xhttp.open("POST", "http://127.0.0.1:5000/route", true);
+      xhttp.open("POST", "http://http://172.20.10.9//route", true);
       xhttp.setRequestHeader("Content-type", "application/json");
       xhttp.send(editor.$container[0].outerText);
     }
