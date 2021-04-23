@@ -306,6 +306,7 @@
 					return _controller
 				}
 				for (const [key, value] of Object.entries(types)) {
+					console.log(key)
 					types[key] = newController(key)
 				}
 
@@ -323,7 +324,24 @@
 					id: 'sliderRudder',
 					position: 'bottomright',
 					logo: "R"
-				}).addTo(map);
+				});
+
+				sliderCourse = L.control.slider(function (value) {
+					var xhttpRudderRef = new XMLHttpRequest();
+					xhttpRudderRef.open("GET", ip + "/controller?type=course&r=" + value, true);
+					xhttpRudderRef.send();
+				}, {
+					max: 360,
+					min: 0,
+					value: 0,
+					step: 0.5,
+					size: '250px',
+					orientation: 'horizontal',
+					id: 'sliderCourse',
+					position: 'bottomright',
+					logo: "C"
+				});
+
 				var controllerType = null
 				function updateController(key) {
 					if (controllerType != key) {
@@ -343,6 +361,13 @@
 						}
 						else {
 							sliderRudder.remove()
+						}
+
+						if (controllerType == "course") {
+							sliderCourse.addTo(map)
+						}
+						else {
+							sliderCourse.remove()
 						}
 
 					}

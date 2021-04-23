@@ -58,6 +58,11 @@ class Regulator:
 
     def update(self, gps_lat, gps_lon, gps_yaw):
         dist_m, az = vdist(gps_lat, gps_lon, self.lat_goal, self.lon_goal)
+        with open('settings.json', 'r') as j:
+                settings = json.load(j)
+        if(settings['controller']['type'] == "course"):
+            az = float(settings['controller']['refCourse'])
+
         azRaw = np.degrees((-gps_yaw+np.pi/2) % (2 * np.pi))
 
         if dist_m < 5 and self.goalIndex < len(self.coordinates)-1:

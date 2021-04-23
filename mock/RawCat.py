@@ -53,9 +53,9 @@ class RawCat:
             with open('settings.json', 'r') as j:
                 settings = json.load(j)
             if(not settings['rudder']['darkMode']):
-                if settings['controller']['type'] == "route":
+                if settings['controller']['type'] != "rudder":
                     self.yaw = self.regulator.update(location[0], location[1], self.x[3])
-                if settings['controller']['type'] == "rudder":
+                else:
                     self.yaw = ((settings['rudder']['ref']-512)/1024)*np.pi/4
 
             self.xdot[0] = self.x[2]*np.cos(self.x[3] + self.beta(self.yaw)) - self.disp[0]

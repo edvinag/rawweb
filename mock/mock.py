@@ -86,15 +86,18 @@ def get_rudder():
 @api.route('/controller', methods=['GET'])
 def get_controller():
   type_v = request.args.get('type')
+  r = request.args.get('r')
   settings = None
   with open('settings.json', 'r') as j:
     settings = json.load(j)
 
   if(type_v != ""):
     settings['controller']['type'] = type_v
+  if(r != ""):
+    settings['controller']['refCourse'] = r
 
-    with open('settings.json', 'w') as outfile:
-      json.dump(settings, outfile)
+  with open('settings.json', 'w') as outfile:
+    json.dump(settings, outfile)
   
   return jsonify(settings['controller'])
 
