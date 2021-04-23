@@ -17,9 +17,6 @@ class Regulator:
         settings = None
         with open('settings.json', 'r') as j:
             settings = json.load(j)
-        settings['route']['goalIndex'] = 0
-        with open('settings.json', 'w') as outfile:
-            json.dump(settings, outfile)
 
         self.goalIndex = 0
         self.lat_goal = None

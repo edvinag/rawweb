@@ -16,7 +16,7 @@ from Regulator import Regulator
 
 class RawCat:
     def __init__(self):
-        self.x=[0, 0, 30 ,0*2*np.pi/360]
+        self.x=[0, 0, 10 ,0*2*np.pi/360]
         self.xdot=[0,0,0,0]
         self.yaw = 0*np.pi/360
         self.lr = 10
@@ -25,8 +25,12 @@ class RawCat:
         self.acc = 0
         self.disp = [0, 0]
 
-        self.enu_ref_lat = 57.572512
-        self.enu_ref_lon = 11.926099
+        data = None
+        with open('data.json', 'r') as j:
+            data = json.load(j)
+
+        self.enu_ref_lat = data['gps']['location']['latitude']
+        self.enu_ref_lon = data['gps']['location']['longitude']
 
         self.regulator = Regulator()
 
