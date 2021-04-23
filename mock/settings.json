@@ -1,13 +1,1 @@
-{
-    "geometry": {
-        "coordinates": [
-            [
-                11.679153442382812,
-                57.962231602587586
-            ]
-        ],
-        "type": "LineString"
-    },
-    "properties": {},
-    "type": "Feature"
-}
+{"controller": {"T": 200, "kd": 0, "ki": 0, "kp": 1, "output": {"max": 150, "min": -150}, "refCourse": 0, "reflocation": {"latitude": 57.56919652251293, "longitude": 11.898164749582065}, "type": "route"}, "gps": {"T": 500, "simulated": false}, "route": {"changePointDistKm": 50, "goalIndex": 16, "maxIndex": -1}, "rudder": {"T": 200, "darkMode": false, "hysteres": 25, "ref": 134, "scale": 1.1212, "simulated": false}}

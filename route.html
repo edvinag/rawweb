@@ -32,13 +32,15 @@
     function loadRoute() {
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function () {
-        editor = new JsonEditor('#json-display', JSON.parse(this.responseText));
+        if (this.readyState == 4 && this.status == 200) {
+          editor = new JsonEditor('#json-display', JSON.parse(this.responseText));
+        }
       };
       xhttp.open("GET", ip + "/route", true);
       xhttp.send();
     }
 
-    function postRoute(){
+    function postRoute() {
       var xhttp = new XMLHttpRequest();
       xhttp.open("POST", ip + "/route", true);
       xhttp.setRequestHeader("Content-type", "application/json");

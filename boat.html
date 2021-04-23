@@ -36,20 +36,24 @@
     function load() {
       var xhttpData = new XMLHttpRequest();
       xhttpData.onreadystatechange = function () {
-        var editorData = new JsonEditor('#json-display-data', JSON.parse(this.responseText));
+        if (this.readyState == 4 && this.status == 200) {
+          var editorData = new JsonEditor('#json-display-data', JSON.parse(this.responseText));
+        }
       };
       xhttpData.open("GET", ip + "/data", true);
       xhttpData.send();
 
       var xhttpSettings = new XMLHttpRequest();
       xhttpSettings.onreadystatechange = function () {
-        editorSettings = new JsonEditor('#json-display-settings', JSON.parse(this.responseText));
+        if (this.readyState == 4 && this.status == 200) {
+          editorSettings = new JsonEditor('#json-display-settings', JSON.parse(this.responseText));
+        }
       };
       xhttpSettings.open("GET", ip + "/settings", true);
       xhttpSettings.send();
     }
 
-    function postSettings(){
+    function postSettings() {
       var xhttp = new XMLHttpRequest();
       xhttp.open("POST", ip + "/settings", true);
       xhttp.setRequestHeader("Content-type", "application/json");
