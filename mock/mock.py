@@ -15,15 +15,38 @@ def get_route():
   with open('route.json', 'r') as j:
     json_data = json.load(j)
 
+  settings = None
+  with open('settings.json', 'r') as j:
+    settings = json.load(j)
+  if(request.args.get('goalIndex') != None):
+    print("goal:" + request.args.get('goalIndex'))
+    settings['route']['goalIndex'] = int(request.args.get('goalIndex'))
+    
+  with open('settings.json', 'w') as outfile:
+    json.dump(settings, outfile)
+
+  rawcat.updateRoute()
+
   return jsonify(json_data)
 
 
 @api.route('/route', methods=['POST'])
 def post_route():
-    print(request.json)
-    with open('route.json', 'w') as outfile:
-      json.dump(request.json, outfile)
-    return jsonify(request.json)
+  settings = None
+  with open('settings.json', 'r') as j:
+    settings = json.load(j)
+
+  if(request.args.get('keepIndex') != None and request.args.get('keepIndex') != "true"):
+    settings['route']['goalIndex'] = 0
+  
+  with open('settings.json', 'w') as outfile:
+    json.dump(settings, outfile)
+
+  with open('route.json', 'w') as outfile:
+    json.dump(request.json, outfile)
+
+  rawcat.updateRoute()
+  return jsonify(request.json)
 
 
 @api.route('/gps', methods=['GET'])
@@ -72,10 +95,10 @@ def get_rudder():
   with open('settings.json', 'r') as j:
     settings = json.load(j)
 
-  if(darkMode != ""):
+  if(darkMode != None):
     settings['rudder']['darkMode'] = boolConverter(darkMode)
 
-  if(ref != ""):
+  if(ref != None):
     settings['rudder']['ref'] = int(ref)
 
   with open('settings.json', 'w') as outfile:
@@ -91,10 +114,14 @@ def get_controller():
   with open('settings.json', 'r') as j:
     settings = json.load(j)
 
-  if(type_v != ""):
+  if(type_v != None):
     settings['controller']['type'] = type_v
-  if(r != ""):
+  if(r != None):
     settings['controller']['refCourse'] = r
+  if(request.args.get('reflatitude') != None):
+    settings['controller']['reflocation']['latitude'] = request.args.get('reflatitude')
+  if(request.args.get('reflongitude') != None):
+    settings['controller']['reflocation']['longitude'] = request.args.get('reflongitude')
 
   with open('settings.json', 'w') as outfile:
     json.dump(settings, outfile)
@@ -107,6 +134,7 @@ def get_settings():
   json_data = None
   with open('settings.json', 'r') as j:
     json_data = json.load(j)
+
   return jsonify(json_data)
 
 

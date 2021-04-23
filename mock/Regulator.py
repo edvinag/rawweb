@@ -14,16 +14,35 @@ class Regulator:
         self.err = 0
         self.u = 0
 
+        settings = None
+        with open('settings.json', 'r') as j:
+            settings = json.load(j)
+        settings['route']['goalIndex'] = 0
+        with open('settings.json', 'w') as outfile:
+            json.dump(settings, outfile)
+
+        self.goalIndex = 0
+        self.lat_goal = None
+        self.lon_goal = None
+        
+        self.updateRoute()
+
+        self.pidRaw = PID(0.05, 0, 0, setpoint=0, output_limits=(-0.9, 0.9))
+
+    def updateRoute(self):
         with open("route.json") as json_file:
             path = json.load(json_file)
             self.coordinates = path["geometry"]["coordinates"]
+        
+        with open('settings.json', 'r') as j:
+            settings = json.load(j)
+            self.goalIndex = int(settings['route']['goalIndex'])
+            print("self.goalIndex: " + str(self.goalIndex))
 
-        self.goalIndex = 0
         self.lat_goal = self.coordinates[self.goalIndex][1]
         self.lon_goal = self.coordinates[self.goalIndex][0]
         self.updateGoal()
-
-        self.pidRaw = PID(0.05, 0, 0, setpoint=0, output_limits=(-0.9, 0.9))
+        
 
     def unit_vector(self, vector):
         return vector / np.linalg.norm(vector)
@@ -64,15 +83,19 @@ class Regulator:
             az = float(settings['controller']['refCourse'])
 
         azRaw = np.degrees((-gps_yaw+np.pi/2) % (2 * np.pi))
+        if(settings['controller']['type'] == "route"):
+            if dist_m < 5 and self.goalIndex < len(self.coordinates)-1:
+                self.goalIndex = self.goalIndex + 1
+                self.lat_goal = self.coordinates[self.goalIndex][1]
+                self.lon_goal = self.coordinates[self.goalIndex][0]
+                self.updateGoal()
+            elif self.goalIndex == (len(self.coordinates) - 1):
+                self.goalIndex = 0
 
-        if dist_m < 5 and self.goalIndex < len(self.coordinates)-1:
-            self.goalIndex = self.goalIndex + 1
-            self.lat_goal = self.coordinates[self.goalIndex][1]
-            self.lon_goal = self.coordinates[self.goalIndex][0]
-            self.updateGoal()
-        elif self.goalIndex == (len(self.coordinates) - 1):
-            self.goalIndex = 0
-
+        if(settings['controller']['type'] == "location"):
+            self.lat_goal = float(settings['controller']['reflocation']['latitude'])
+            self.lon_goal = float(settings['controller']['reflocation']['longitude'])
+            
         _, self.err = self.get_error(az, azRaw)
         self.u = self.pidRaw(self.err)
 

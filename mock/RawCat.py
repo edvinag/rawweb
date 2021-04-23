@@ -38,7 +38,8 @@ class RawCat:
 
         print("Init RawCat")
 
-        
+    def updateRoute(self):
+        self.regulator.updateRoute()
 
     def beta(self, yaw):
         return np.arctan(np.tan(self.yaw)*self.lr/(self.lr + self.lf))

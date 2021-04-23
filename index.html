@@ -203,16 +203,18 @@
 					}
 				});
 
+
+				var routeGroup = L.layerGroup().addTo(map)
+
 				var latlngs = [
 					[58.198395, 11.466894],
 					[58.198395, 11.466894]
 				];
-
 				var route = L.polyline(latlngs, {
 					color: '#214F5D',
 					weight: 5,
 					opacity: 0.8
-				}).addTo(map);
+				}).addTo(routeGroup);
 
 				var path = L.polyline([], {
 					color: 'green',
@@ -228,14 +230,50 @@
 						height: '80%'
 					});
 				});
+
+				var circleIcon = new L.Icon({
+					iconUrl: 'images/full-moon.png',
+					shadowUrl: null,
+					iconSize: new L.Point(15, 15)
+				});
+
+
 				var xhttpRoute = new XMLHttpRequest();
 				xhttpRoute.onreadystatechange = function () {
 
 					if (this.readyState == 4 && this.status == 200) {
 						var obj = JSON.parse(this.responseText);
 						var array = []
+						var index = 0
 						obj.geometry.coordinates.forEach(function (coordinate) {
 							array.push([coordinate[1], coordinate[0]]);
+							var c = L.marker([coordinate[1], coordinate[0]], {
+								color: '#214F5D',
+								draggable: true,
+								icon: circleIcon,
+								index: index
+							}).addTo(routeGroup)
+							c.on("dblclick", function (e) {
+								var marker = e.target;
+								var xhttp = new XMLHttpRequest();
+								xhttp.open("GET", ip + "/route?goalIndex=" + marker.options.index, true);
+								xhttp.setRequestHeader("Content-type", "application/json");
+								xhttp.send();
+							});
+							c.on("drag", function (e) {
+								var marker = e.target;
+								var latLngs = route.getLatLngs()
+								latLngs[marker.options.index] = marker.getLatLng();
+								route.setLatLngs(latLngs)
+							});
+							c.on("dragend", function (e) {
+								var marker = e.target;
+								var xhttp = new XMLHttpRequest();
+								xhttp.open("POST", ip + "/route?keepIndex=true", true);
+								xhttp.setRequestHeader("Content-type", "application/json");
+								xhttp.send(JSON.stringify(route.toGeoJSON()));
+							});
+							index = index + 1;
 						});
 						route.setLatLngs(array)
 						map.flyToBounds(route.getBounds())
@@ -269,6 +307,20 @@
 				});
 				var port = L.marker([57.57367, 11.92692], { icon: portIcon }).addTo(map);
 
+				var goalIcon = new L.Icon({
+					iconUrl: 'images/circle.png',
+					shadowUrl: null,
+					iconSize: new L.Point(30, 30)
+				});
+				var goal = L.marker([57.57367, 11.92692], { icon: goalIcon, draggable: true }).addTo(map);
+				goal.on("dragend", function (e) {
+					var marker = e.target;
+					var xhttp = new XMLHttpRequest();
+					xhttp.open("GET", ip + "/controller?reflatitude=" + marker.getLatLng().lat + "&reflongitude=" + marker.getLatLng().lng, true);
+					xhttp.setRequestHeader("Content-type", "application/json");
+					xhttp.send(JSON.stringify(route.toGeoJSON()));
+				});
+
 				var goalDirection = L.polyline(latlngs, {
 					color: 'red',
 					weight: 5,
@@ -280,8 +332,9 @@
 					'Nautical': nautical
 				}, {
 					'OpenSeaMap': openseamap,
-					'Route': route,
+					'Route': routeGroup,
 					"Goal direction": goalDirection,
+					"Goal": goal,
 					'Path': path
 				}).addTo(map);
 				map.addControl(new followControl());
@@ -408,7 +461,6 @@
 							else {
 								path.addLatLng([obj.data.gps.location.latitude, obj.data.gps.location.longitude])
 							}
-							// new L.marker([obj.data.gps.location.latitude, obj.data.gps.location.longitude]).addTo(map);
 						}
 					};
 					xhttp.open("GET", ip + "/all", true);
@@ -423,6 +475,9 @@
 						[obj.data.gps.location.latitude, obj.data.gps.location.longitude],
 						[obj.settings.controller.reflocation.latitude, obj.settings.controller.reflocation.longitude]
 					]);
+					if (obj.settings.controller.type == "route") {
+						goal.setLatLng([obj.settings.controller.reflocation.latitude, obj.settings.controller.reflocation.longitude])
+					}
 				}
 
 
