@@ -43,7 +43,7 @@
     function postRoute() {
       var xhttp = new XMLHttpRequest();
       xhttp.open("POST", ip + "/route", true);
-      xhttp.setRequestHeader("Content-type", "application/json");
+      xhttp.setRequestHeader("Content-type", "text/plain");
       xhttp.send(editor.$container[0].outerText);
     }
     loadRoute();

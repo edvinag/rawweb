@@ -257,7 +257,7 @@
 								var marker = e.target;
 								var xhttp = new XMLHttpRequest();
 								xhttp.open("GET", ip + "/route?goalIndex=" + marker.options.index, true);
-								xhttp.setRequestHeader("Content-type", "application/json");
+								xhttp.setRequestHeader("Content-type", "text/plain");
 								xhttp.send();
 							});
 							c.on("drag", function (e) {
@@ -270,7 +270,7 @@
 								var marker = e.target;
 								var xhttp = new XMLHttpRequest();
 								xhttp.open("POST", ip + "/route?keepIndex=true", true);
-								xhttp.setRequestHeader("Content-type", "application/json");
+								xhttp.setRequestHeader("Content-type", "text/plain");
 								xhttp.send(JSON.stringify(route.toGeoJSON()));
 							});
 							index = index + 1;
@@ -461,6 +461,7 @@
 							else {
 								path.addLatLng([obj.data.gps.location.latitude, obj.data.gps.location.longitude])
 							}
+							
 						}
 					};
 					xhttp.open("GET", ip + "/all", true);

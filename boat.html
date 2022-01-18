@@ -56,7 +56,7 @@
     function postSettings() {
       var xhttp = new XMLHttpRequest();
       xhttp.open("POST", ip + "/settings", true);
-      xhttp.setRequestHeader("Content-type", "application/json");
+      xhttp.setRequestHeader("Content-type", "text/plain");
       xhttp.send(editorSettings.$container[0].outerText);
     }
 

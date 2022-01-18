@@ -2,8 +2,8 @@ from flask import Flask, json, request, jsonify
 from flask_cors import CORS
 from RawCat import RawCat
 
-gps = {"gps": {"location": {"longitude": 11.462431, "latitude": 58.197761}, "course": 45}}
-routeInfo = {"longitude": 11.462431, "latitude": 58.197761, "course": 45, "refcourse": 45, "goallongitude": 11.467781080864368, "goallatitude": 58.19432362991195,}
+gps = {"gps": {"location": {"longitude": 11.924482585745864, "latitude": 57.5726428059939}, "course": 45}}
+routeInfo = {"longitude": 11.924482585745864, "latitude": 57.5726428059939, "course": 45, "refcourse": 45, "goallongitude": 11.467781080864368, "goallatitude": 58.19432362991195,}
 api = Flask(__name__)
 CORS(api)
 
@@ -145,7 +145,22 @@ def post_settings():
       json.dump(request.json, outfile)
     return jsonify(request.json)
 
+@api.route('/phone', methods=['POST'])
+def post_phone():
+    print(request.json)
+
+    settings = None
+    with open('settings.json', 'r') as j:
+      settings = json.load(j)
+    settings['controller']['refCourse'] =request.json["locationMagneticHeading"]
+    with open('settings.json', 'w') as outfile:
+      json.dump(settings, outfile)
+
+    with open('phone.json', 'w') as outfile:
+      json.dump(request.json, outfile)
+    return jsonify(request.json)
+
 if __name__ == '__main__':
-    api.run()
+    api.run(host="0.0.0.0")
 
 
