@@ -12,9 +12,21 @@
     crossorigin="anonymous"></script>
   <script type="text/javascript" src="./dist/jquery.json-editor.min.js"></script>
   <h1 style="color:#116a6f;">RawCat Route</h1>
+  <div>
+    <button class="button jsonButton buttonShadow" onclick="readCopy()">From Clipboard</button>
+    <button class="button jsonButton buttonShadow" onclick="postRoute()">Upload Route</button>
+  </div>
+  <div>
+    <input class="jsonTextBox" id="stepsText" type="text" value="100">
+    <button class="button jsonButton buttonShadow" id="stepsButton">Add points</button>
+  </div>
+  <div>
+    <input class="jsonTextBox" id="gpx" type="text" value="GPX">
+    <input class="jsonTextBox" id="routName" type="text" value="Rout Name">
+    <button class="button jsonButton buttonShadow" id="convertGpx" onclick="convertGpx()">Convert GPX</button>
+  </div>
+
   <pre id="json-display" style="width: 30%;"></pre>
-  <button class="button jsonButton buttonShadow" onclick="readCopy()">From Clipboard</button>
-  <button class="button jsonButton buttonShadow" onclick="postRoute()">Upload Route</button>
   <script>
     var obj = null
     var editor = null
@@ -48,6 +60,81 @@
     }
     loadRoute();
 
+  </script>
+
+  <script>
+    function convertGpx() {
+      var text, parser, xmlDoc;
+
+      text = document.getElementById("gpx").value;
+
+      parser = new DOMParser();
+      xmlDoc = parser.parseFromString(text, "text/xml");
+      rtes = xmlDoc.getElementsByTagName("rte");
+
+      for (var i = 0; i < rtes.length; i++) {
+        rte = rtes[i];
+        if (rte.getElementsByTagName("name")[0].textContent == "test") {
+          console.log(rte);
+          rtepts = rte.getElementsByTagName("rtept");
+
+          data = ""
+          for (var j = 0; j < rtepts.length; j++) {
+            rtept = rtepts[j];
+            data = data + "[" + rtept.getAttribute("lon") + ", " + rtept.getAttribute("lat") + "],";
+          }
+          data = data.slice(0, -1)
+          geojson = '{"geometry": {"coordinates": [' + data + '], "type": "LineString"}, "properties": {}, "type": "Feature"}';
+
+          editor = new JsonEditor('#json-display', JSON.parse(geojson));
+          break;
+        }
+      }
+    }
+  </script>
+
+  <script type="module">
+    import LatLon, { Dms } from 'https://cdn.jsdelivr.net/npm/geodesy@2/latlon-spherical.js';
+
+    document.getElementById("stepsButton").addEventListener("click", step);
+
+    // http://www.movable-type.co.uk/scripts/latlong.html
+    function step() {
+
+      const text = editor.$container[0].outerText;
+      console.log(text)
+      var geojson = JSON.parse(text);
+      let step_coordinates = []
+
+      for (var j = 0; j < geojson.geometry.coordinates.length - 1; j++) {
+        const p_start = new LatLon(geojson.geometry.coordinates[j][1], geojson.geometry.coordinates[j][0]);
+        const p_end = new LatLon(geojson.geometry.coordinates[j + 1][1], geojson.geometry.coordinates[j + 1][0]);
+
+        const dist = p_start.distanceTo(p_end);
+        const brng = p_start.initialBearingTo(p_end);
+
+        const length = Math.ceil(dist / parseInt(document.getElementById("stepsText").value))
+        const distperpoint = dist / length;
+
+        for (var i = 0; i < length; i++) {
+          const p_next = p_start.destinationPoint(distperpoint * i, brng);
+          step_coordinates.push([p_next._lon, p_next._lat])
+        }
+
+      }
+
+      console.log(step_coordinates);
+      var path = new Object();
+      path.geometry = new Object();
+      path.geometry.type = "LineString";
+      path.type = "Feature";
+      path.properties = Object();
+      path.geometry.coordinates = step_coordinates;
+      var jsonString = JSON.stringify(path);
+
+      // document.getElementById("gfx").value = jsonString;
+      editor = new JsonEditor('#json-display', JSON.parse(jsonString));
+    }
   </script>
 </body>
 

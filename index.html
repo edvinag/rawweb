@@ -317,7 +317,7 @@
 					var marker = e.target;
 					var xhttp = new XMLHttpRequest();
 					xhttp.open("GET", ip + "/controller?reflatitude=" + marker.getLatLng().lat + "&reflongitude=" + marker.getLatLng().lng, true);
-					xhttp.setRequestHeader("Content-type", "application/json");
+					xhttp.setRequestHeader("Content-type", "text/plain");
 					xhttp.send(JSON.stringify(route.toGeoJSON()));
 				});
 
