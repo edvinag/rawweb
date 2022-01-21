@@ -42,11 +42,13 @@ def post_route():
   with open('settings.json', 'w') as outfile:
     json.dump(settings, outfile)
 
+  requestjson = json.loads(request.data)
+
   with open('route.json', 'w') as outfile:
-    json.dump(request.json, outfile)
+    json.dump(requestjson, outfile)
 
   rawcat.updateRoute()
-  return jsonify(request.json)
+  return jsonify(requestjson)
 
 
 @api.route('/gps', methods=['GET'])
@@ -140,27 +142,26 @@ def get_settings():
 
 @api.route('/settings', methods=['POST'])
 def post_settings():
-    print(request.json)
+    requestjson = json.loads(request.data)
     with open('settings.json', 'w') as outfile:
-      json.dump(request.json, outfile)
-    return jsonify(request.json)
+      json.dump(requestjson, outfile)
+    return jsonify(requestjson)
 
 @api.route('/phone', methods=['POST'])
 def post_phone():
-    print(request.json)
-
     settings = None
     with open('settings.json', 'r') as j:
       settings = json.load(j)
     settings['controller']['refCourse'] =request.json["locationMagneticHeading"]
     with open('settings.json', 'w') as outfile:
       json.dump(settings, outfile)
-
+    requestjson = json.loads(request.data)
     with open('phone.json', 'w') as outfile:
-      json.dump(request.json, outfile)
-    return jsonify(request.json)
+      json.dump(requestjson, outfile)
+    return jsonify(requestjson)
 
 if __name__ == '__main__':
-    api.run(host="0.0.0.0")
+  api.run()
+    # api.run(host="0.0.0.0")
 
 
