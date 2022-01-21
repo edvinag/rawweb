@@ -8,8 +8,8 @@ ip = "http://192.168.8.112"
 if (vars['ip'] == "localhost") {
     ip = "http://127.0.0.1:5000"
 }
-else if (vars['ip'] != undefined) {
-    ip = "http://" + vars['ip'].replace("d",".").replace("p",":")
+if (vars['ip'] == "Connect") {
+    ip = "http://192.168.86.50:5000"
 }
 
 console.log(ip)
