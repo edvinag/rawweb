@@ -8,6 +8,7 @@
 
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
 	<link rel="stylesheet" href="http://www.jacklmoore.com/colorbox/example1/colorbox.css" />
+	<link rel="stylesheet" href="dist/leaflet-slider.css" />
 	<style type="text/css">
 		html,
 		body,
@@ -36,19 +37,19 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
 	<script src="http://www.jacklmoore.com/colorbox/jquery.colorbox.js"></script>
 	<link rel="stylesheet" href="style.css">
+	<script src="dist/leaflet-slider.js"></script>
 </head>
 
 <body>
+	<script src="ip.js" type="text/javascript"></script>
 	<div id="map"></div>
-	<script src="geojson.js" type="text/javascript"></script>
 	<script type="text/javascript">
 
 		//<![CDATA[
 		(function ($) {
 			$(function () {
-				var follow = true;
-				var darkmode = true;
-				var map = new L.Map('map').setView([58.198395, 11.466894], 16);
+				var follow = false;
+				var map = new L.Map('map').setView([57.57367, 11.92692], 16);
 
 				map.attributionControl.setPrefix('').addAttribution('Map data &copy; <a href="http://www.marinetraffic.com">MarineTraffic</a>');
 
@@ -58,7 +59,7 @@
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
 					subdomains: 'abcd',
 					maxZoom: 19
-				}).addTo(map);
+				})
 
 				// https://map02.eniro.no/geowebcache/service/tms1.0.0/nautical2x/15/17458/22843.png?c=3854509113&v=20200602
 				var nautical = L.tileLayer("https://map02.eniro.no/geowebcache/service/tms1.0.0/nautical2x/{z}/{x}/{y}.{type}?c=crc&v={tileVersion}", {
@@ -79,9 +80,9 @@
 					updateWhenIdle: false,
 					zIndex: 0,
 					zoomOffset: 0
-				})
+				}).addTo(map);
 
-				openseamap = new L.TileLayer('http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+				openseamap = new L.TileLayer('http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', { maxZoom: 19 });
 
 				var followControl = L.Control.extend({
 
@@ -95,17 +96,17 @@
 						container.title = "Follow RawCat";
 
 						container.style.backgroundColor = 'transparent';
-						container.style.backgroundImage = "url(follow.png)";
+						container.style.backgroundImage = "url(images/notfollow.png)";
 						container.style.backgroundSize = "30px 30px";
 						container.style.width = '30px';
 						container.style.height = '30px';
 						container.onclick = function () {
 							follow = !follow
 							if (follow) {
-								container.style.backgroundImage = "url(follow.png)";
+								container.style.backgroundImage = "url(images/follow.png)";
 							}
 							else {
-								container.style.backgroundImage = "url(notfollow.png)";
+								container.style.backgroundImage = "url(images/notfollow.png)";
 							}
 						}
 						return container;
@@ -124,66 +125,102 @@
 						container.title = "Go to route RawCat";
 
 						container.style.backgroundColor = 'transparent';
-						container.style.backgroundImage = "url(route.png)";
+						container.style.backgroundImage = "url(images/fit_route.png)";
 						container.style.backgroundSize = "30px 30px";
 						container.style.width = '30px';
 						container.style.height = '30px';
 						container.onclick = function () {
 							map.flyToBounds(route.getBounds())
+						}
+						return container;
+					}
+				});
+				darkMode = true
+				var offonControl = L.Control.extend({
 
+					options: {
+						position: 'bottomleft'
+					},
+
+					container: null,
+
+					onAdd: function (map) {
+						container = L.DomUtil.create('p');
+						container.type = "button";
+						container.title = "off/on";
+
+						container.style.backgroundColor = 'transparent';
+						container.style.backgroundImage = "url(images/off.png)";
+						container.style.backgroundSize = "30px 30px";
+						container.style.width = '30px';
+						container.style.height = '30px';
+						container.onclick = function () {
+							var xhttpOnOff = new XMLHttpRequest();
+							xhttpOnOff.onreadystatechange = function () {
+								if (this.readyState == 4 && this.status == 200) {
+									var obj = JSON.parse(this.responseText)
+									darkMode = obj.darkMode
+									setDarkMode(darkMode)
+								}
+							};
+							xhttpOnOff.open("GET", ip + "/rudder?darkMode=" + !darkMode, true);
+							xhttpOnOff.send();
 						}
 						return container;
 					}
 				});
 
-				// var offon = L.Control.extend({
+				var controllerControl = L.Control.extend({
 
-				// 	options: {
-				// 		position: 'bottomleft'
-				// 	},
+					options: {
+						position: 'bottomleft',
+						name: ""
+					},
 
-				// 	onAdd: function (map) {
-				// 		var container = L.DomUtil.create('p');
-				// 		container.type = "button";
-				// 		container.title = "off/on";
+					container: null,
 
-				// 		container.style.backgroundColor = 'transparent';
-				// 		container.style.backgroundImage = "url(off.png)";
-				// 		container.style.backgroundSize = "30px 30px";
-				// 		container.style.width = '30px';
-				// 		container.style.height = '30px';
-				// 		container.onclick = function () {
+					onAdd: function (map) {
+						container = L.DomUtil.create('p');
+						container.type = "button";
+						container.title = this.options.name + " controller";
 
-				// 			var xhttpOnOff = new XMLHttpRequest();
-				// 			xhttpOnOff.onreadystatechange = function () {
-				// 				var obj = JSON.parse(this.responseText)
-				// 				darkmode = obj.;
-				// 				if (darkmode) {
-				// 					container.style.backgroundImage = "url(off.png)";
-				// 				}
-				// 				else {
-				// 					container.style.backgroundImage = "url(on.png)";
-				// 				}
-				// 			};
-				// 			xhttpOnOff.open("GET", "http://http://172.20.10.9//data", true);
-				// 			xhttpOnOff.send();
+						container.style.backgroundColor = 'transparent';
+						container.style.backgroundImage = "url(images/" + this.options.name + "_off.png)";
+						container.style.backgroundSize = "30px 30px";
+						container.style.width = '30px';
+						container.style.height = '30px';
+						container.onclick = function (elem) {
+							var xhttpOnOff = new XMLHttpRequest();
+							xhttpOnOff.onreadystatechange = function () {
+								if (this.readyState == 4 && this.status == 200) {
+									updateController(elem.srcElement.id)
+								}
+							};
+							xhttpOnOff.open("GET", ip + "/controller?type=" + elem.srcElement.id, true);
+							xhttpOnOff.send();
+						}
+						return container;
+					}
+				});
 
 
-				// 		}
-				// 		return container;
-				// 	}
-				// });
+				var routeGroup = L.layerGroup().addTo(map)
 
 				var latlngs = [
 					[58.198395, 11.466894],
 					[58.198395, 11.466894]
 				];
-
 				var route = L.polyline(latlngs, {
 					color: '#214F5D',
 					weight: 5,
 					opacity: 0.8
-				}).addTo(map);
+				}).addTo(routeGroup);
+
+				var path = L.polyline([], {
+					color: 'green',
+					weight: 3,
+					opacity: 0.8
+				});
 
 				route.on('click', function (e) {
 					$.colorbox({
@@ -194,21 +231,60 @@
 					});
 				});
 
+				var circleIcon = new L.Icon({
+					iconUrl: 'images/full-moon.png',
+					shadowUrl: null,
+					iconSize: new L.Point(15, 15)
+				});
+
+
 				var xhttpRoute = new XMLHttpRequest();
 				xhttpRoute.onreadystatechange = function () {
-					var obj = JSON.parse(this.responseText)
-					var array = []
-					obj.geometry.coordinates.forEach(function (coordinate) {
-						array.push([coordinate[1], coordinate[0]]);
-					});
-					route.setLatLngs(array)
+
+					if (this.readyState == 4 && this.status == 200) {
+						var obj = JSON.parse(this.responseText);
+						var array = []
+						var index = 0
+						obj.geometry.coordinates.forEach(function (coordinate) {
+							array.push([coordinate[1], coordinate[0]]);
+							var c = L.marker([coordinate[1], coordinate[0]], {
+								color: '#214F5D',
+								draggable: true,
+								icon: circleIcon,
+								index: index
+							}).addTo(routeGroup)
+							c.on("dblclick", function (e) {
+								var marker = e.target;
+								var xhttp = new XMLHttpRequest();
+								xhttp.open("GET", ip + "/route?goalIndex=" + marker.options.index, true);
+								xhttp.setRequestHeader("Content-type", "text/plain");
+								xhttp.send();
+							});
+							c.on("drag", function (e) {
+								var marker = e.target;
+								var latLngs = route.getLatLngs()
+								latLngs[marker.options.index] = marker.getLatLng();
+								route.setLatLngs(latLngs)
+							});
+							c.on("dragend", function (e) {
+								var marker = e.target;
+								var xhttp = new XMLHttpRequest();
+								xhttp.open("POST", ip + "/route?keepIndex=true", true);
+								xhttp.setRequestHeader("Content-type", "text/plain");
+								xhttp.send(JSON.stringify(route.toGeoJSON()));
+							});
+							index = index + 1;
+						});
+						route.setLatLngs(array)
+						map.flyToBounds(route.getBounds())
+					}
 				};
-				xhttpRoute.open("GET", "http://http://172.20.10.9//route", true);
+				xhttpRoute.open("GET", ip + "/route", true);
 				xhttpRoute.send();
 
 
 				var boatIcon = new L.Icon({
-					iconUrl: 'marker.png',
+					iconUrl: 'images/marker.png',
 					shadowUrl: null,
 					iconSize: new L.Point(19, 26),
 					iconAnchor: new L.Point(9, 13)
@@ -224,6 +300,27 @@
 					});
 				});
 
+				var portIcon = new L.Icon({
+					iconUrl: 'images/port.png',
+					shadowUrl: null,
+					iconSize: new L.Point(30, 30)
+				});
+				var port = L.marker([57.57367, 11.92692], { icon: portIcon }).addTo(map);
+
+				var goalIcon = new L.Icon({
+					iconUrl: 'images/circle.png',
+					shadowUrl: null,
+					iconSize: new L.Point(30, 30)
+				});
+				var goal = L.marker([57.57367, 11.92692], { icon: goalIcon, draggable: true }).addTo(map);
+				goal.on("dragend", function (e) {
+					var marker = e.target;
+					var xhttp = new XMLHttpRequest();
+					xhttp.open("GET", ip + "/controller?reflatitude=" + marker.getLatLng().lat + "&reflongitude=" + marker.getLatLng().lng, true);
+					xhttp.setRequestHeader("Content-type", "text/plain");
+					xhttp.send(JSON.stringify(route.toGeoJSON()));
+				});
+
 				var goalDirection = L.polyline(latlngs, {
 					color: 'red',
 					weight: 5,
@@ -235,38 +332,159 @@
 					'Nautical': nautical
 				}, {
 					'OpenSeaMap': openseamap,
-					'Route': route,
-					"Goal direction": goalDirection
+					'Route': routeGroup,
+					"Goal direction": goalDirection,
+					"Goal": goal,
+					'Path': path
 				}).addTo(map);
 				map.addControl(new followControl());
 				map.addControl(new seeRouteControl());
-				map.addControl(new offon());
+				var offon = new offonControl()
+				map.addControl(offon);
 
-				function loadBoat() {
+				var types = {
+					rudder: null,
+					route: null,
+					course: null,
+					location: null
+				}
+				function newController(name) {
+					var _controller = new controllerControl();
+					_controller.options = {
+						position: 'bottomleft',
+						name: name
+					};
+					map.addControl(_controller)
+					_controller._container.id = _controller.options.name
+					return _controller
+				}
+				for (const [key, value] of Object.entries(types)) {
+					console.log(key)
+					types[key] = newController(key)
+				}
+
+				sliderRudder = L.control.slider(function (value) {
+					var xhttpRudderRef = new XMLHttpRequest();
+					xhttpRudderRef.open("GET", ip + "/rudder?ref=" + value, true);
+					xhttpRudderRef.send();
+				}, {
+					max: 512 * 2,
+					min: 0,
+					value: 512,
+					step: 1,
+					size: '250px',
+					orientation: 'horizontal',
+					id: 'sliderRudder',
+					position: 'bottomright',
+					logo: "R"
+				});
+
+				sliderCourse = L.control.slider(function (value) {
+					var xhttpRudderRef = new XMLHttpRequest();
+					xhttpRudderRef.open("GET", ip + "/controller?type=course&r=" + value, true);
+					xhttpRudderRef.send();
+				}, {
+					max: 360,
+					min: 0,
+					value: 0,
+					step: 0.5,
+					size: '250px',
+					orientation: 'horizontal',
+					id: 'sliderCourse',
+					position: 'bottomright',
+					logo: "C"
+				});
+
+				var controllerType = null
+				function updateController(key) {
+					if (controllerType != key) {
+						controllerType = key
+
+						for (const [_key, value] of Object.entries(types)) {
+							if (_key != key) {
+								types[_key].getContainer().style.backgroundImage = 'url(images/' + _key + '_off.png)'
+							}
+							else {
+								types[_key].getContainer().style.backgroundImage = 'url(images/' + _key + '.png)'
+							}
+						}
+
+						if (controllerType == "rudder") {
+							sliderRudder.addTo(map)
+						}
+						else {
+							sliderRudder.remove()
+						}
+
+						if (controllerType == "course") {
+							sliderCourse.addTo(map)
+						}
+						else {
+							sliderCourse.remove()
+						}
+
+					}
+				}
+
+				function setDarkMode(mode) {
+					darkMode = mode
+					if (darkMode) {
+						offon.getContainer().style.backgroundImage = "url(images/off.png)";
+					}
+					else {
+						offon.getContainer().style.backgroundImage = "url(images/on.png)";
+					}
+				}
+
+				function loadAll() {
 					var xhttp = new XMLHttpRequest();
 					xhttp.onreadystatechange = function () {
-						obj = JSON.parse(this.responseText);
-						console.log(obj)
-						boat.setLatLng([obj.latitude, obj.longitude])
-						boat.setIconAngle(obj.course)
+						if (this.readyState == 4 && this.status == 200) {
+							var obj = JSON.parse(this.responseText);
+							setBoat(obj)
 
-						latlngs = [
-							[obj.latitude, obj.longitude],
-							[obj.goallatitude, obj.goallongitude]
-						];
-						goalDirection.setLatLngs(latlngs)
+							if (follow) {
+								map.flyTo(boat.getLatLng())
+							}
 
-						// var follow = document.getElementById("follow");
-						if (follow) {
-							console.log("fly")
-							map.flyTo(boat.getLatLng())
+							updateController(obj.settings.controller.type)
+
+							setDarkMode(obj.settings.rudder.darkMode)
+
+							if (path == null) {
+								path = L.polyline([[obj.data.gps.location.latitude, obj.data.gps.location.longitude]], {
+									color: 'white',
+									weight: 3,
+									opacity: 0.5
+								}).addTo(map);
+							}
+							else {
+								path.addLatLng([obj.data.gps.location.latitude, obj.data.gps.location.longitude])
+							}
+							
 						}
 					};
-					xhttp.open("GET", "http://http://172.20.10.9//routeInfo", true);
+					xhttp.open("GET", ip + "/all", true);
 					xhttp.send();
 				}
-				loadBoat();
-				var myVar = setInterval(loadBoat, 1000);
+
+				function setBoat(obj) {
+					boat.setLatLng([obj.data.gps.location.latitude, obj.data.gps.location.longitude])
+					boat.setIconAngle(obj.data.gps.course)
+
+					goalDirection.setLatLngs([
+						[obj.data.gps.location.latitude, obj.data.gps.location.longitude],
+						[obj.settings.controller.reflocation.latitude, obj.settings.controller.reflocation.longitude]
+					]);
+					if (obj.settings.controller.type == "route") {
+						goal.setLatLng([obj.settings.controller.reflocation.latitude, obj.settings.controller.reflocation.longitude])
+					}
+				}
+
+
+
+				loadAll();
+				var myVar = setInterval(loadAll, 1000);
 
 			});
 		})(jQuery);

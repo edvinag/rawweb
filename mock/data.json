@@ -1,0 +1,1 @@
+{"gps": {"location": {"longitude": 11.898251272059714, "latitude": 57.56953903690314}, "course": 187.72342494101034}, "wifi": {"localIP": "192.168.137.42", "gatewayIP": "192.168.137.1", "subnetMask": "255.255.255.0", "signalStrengh": -58}, "rudder": {"position": 9, "larboard": false, "starboard": false}, "controller": {"error": 0}}
