@@ -161,7 +161,7 @@ def post_phone():
     return jsonify(requestjson)
 
 if __name__ == '__main__':
-  api.run()
-    # api.run(host="0.0.0.0")
+  # api.run()
+    api.run(host="0.0.0.0")
 
 
