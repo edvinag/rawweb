@@ -9,7 +9,7 @@ if (vars['ip'] == "localhost") {
     ip = "http://127.0.0.1:5000"
 }
 else if (vars['ip'] != undefined) {
-    ip = "http://" + vars['ip']
+    ip = "http://" + vars['ip'].replace('-','.')
 }
 
 console.log(ip)
