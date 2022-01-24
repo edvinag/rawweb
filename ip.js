@@ -3,7 +3,7 @@ var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m,
     vars[key] = value;
 });
 
-ip = "http://192.168.8.112"
+ip = "http://192.168.86.112"
 
 if (vars['ip'] == "localhost") {
     ip = "http://127.0.0.1:5000"
