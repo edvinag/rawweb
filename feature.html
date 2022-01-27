@@ -71,7 +71,7 @@
 				});
 				var newRouteGroup = L.layerGroup().addTo(map)
 				var newRouteMarkerGroup = L.layerGroup().addTo(map)
-				
+
 				map.on('click', function (e) {
 					if (draw && !drawFirst) {
 						var marker = L.marker(e.latlng, {
@@ -391,17 +391,19 @@
 				var route = L.polyline(latlngs, {
 					color: '#214F5D',
 					weight: 5,
-					opacity: 0.8
+					opacity: 0.8,
+					id: "route"
 				}).addTo(routeGroup);
-
+				var routePopUp = null;
 				route.on('click', function (e) {
-					$.colorbox({
-						href: "route.html",
-						iframe: true,
-						width: '80%',
-						height: '80%'
-					});
+					routePopUp = L.popup()
+						.setLatLng(e.latlng)
+						.setContent('<button class="w3-button w3-light-grey" style="width:100%" type="button" id="addSteps">Addera steg till rutt</button>')
+						// .setContent('<iframe frameBorder="0" id="iframe" src="./routeNew.html"></iframe>')
+						.openOn(map);
+					document.getElementById('addSteps').onclick = addStepsFun;
 				});
+
 				var newRoute = L.polyline([], {
 					color: '#86000f',
 					weight: 5,
@@ -413,7 +415,9 @@
 					if (!draw) {
 						newRoutePopup = L.popup()
 							.setLatLng(e.latlng)
-							.setContent('<button class="w3-button w3-light-grey" type="button" id="newRoute">Välj denna rutt</button>')
+
+							.setContent('<button class="w3-button w3-light-grey" style="width:100%" type="button" id="newRoute">Välj rutt</button>')
+							// .setContent('<iframe id="iframe" src="./route.html"></iframe>')
 							.openOn(map);
 						document.getElementById('newRoute').onclick = postnewRouteRoute;
 					}
@@ -582,19 +586,55 @@
 				}
 
 				function postnewRouteRoute() {
-					console.log(JSON.stringify(newRoute.toGeoJSON()))
+					route.setLatLngs(newRoute.getLatLngs());
+					addStepsFun();
+					newRouteGroup.clearLayers();
+					newRouteMarkerGroup.clearLayers()
+					newRoutePopup.removeFrom(map);
+					// var xhttp = new XMLHttpRequest();
+					// xhttp.open("POST", ip + "/route?keepIndex=false", true);
+					// xhttp.setRequestHeader("Content-type", "text/plain");
+					// xhttp.onreadystatechange = function () {
+					// 	// refreshMap();
+					// 	addStepsFun();
+					// 	newRouteGroup.clearLayers();
+					// 	newRouteMarkerGroup.clearLayers()
+					// 	newRoutePopup.removeFrom(map);
+					// }
+					// xhttp.send(JSON.stringify(newRoute.toGeoJSON()));
+				}
+
+				function addStepsFun() {
+					var routeLatLngs = route.getLatLngs();
+					route.setLatLngs([]);
+					routeLatLngs.forEach((element, index, array) => {
+						route.addLatLng(element);
+						if (index < routeLatLngs.length - 1) {
+							var point0 = element
+							var point1 = routeLatLngs[index + 1]
+
+							var dist = map.distance(routeLatLngs[0], routeLatLngs[1]);
+							var steps = Math.ceil(dist / 100);
+
+
+							var latScale = (point1['lat'] - point0['lat']) / steps
+							var lngScale = (point1['lng'] - point0['lng']) / steps
+							for (let i = 1; i < steps; i++) {
+								var pointNew = [(latScale * i) + point0['lat'], (lngScale * i) + point0['lng']]
+								route.addLatLng(pointNew);
+							}
+						}
+					});
 					var xhttp = new XMLHttpRequest();
 					xhttp.open("POST", ip + "/route?keepIndex=false", true);
 					xhttp.setRequestHeader("Content-type", "text/plain");
 					xhttp.onreadystatechange = function () {
 						refreshMap();
-						newRouteGroup.clearLayers();
-						newRouteMarkerGroup.clearLayers()
-						newRoutePopup.removeFrom(map);
+						routeGroup.clearLayers();
+						routePopUp.removeFrom(map);
 					}
-					xhttp.send(JSON.stringify(newRoute.toGeoJSON()));
-
-
+					console.log(JSON.stringify(route.toGeoJSON()))
+					xhttp.send(JSON.stringify(route.toGeoJSON()));
 				}
 
 				function refreshMap() {
@@ -708,6 +748,7 @@
 			});
 		})(jQuery);
 //]]>
+	</script>
 	</script>
 </body>
 
