@@ -9,6 +9,7 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
 	<link rel="stylesheet" href="http://www.jacklmoore.com/colorbox/example1/colorbox.css" />
 	<link rel="stylesheet" href="dist/leaflet-slider.css" />
+	<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 	<!-- <a href="https://www.flaticon.com/free-icons/draw" title="draw icons">Draw icons created by Freepik - Flaticon</a> -->
 	<style type="text/css">
 		html,
@@ -51,6 +52,7 @@
 			$(function () {
 				var follow = false;
 				var draw = false;
+				var drawFirst = false;
 				var map = new L.Map('map').setView([57.57367, 11.92692], 16);
 
 				map.attributionControl.setPrefix('').addAttribution('Map data &copy; <a href="http://www.marinetraffic.com">MarineTraffic</a>');
@@ -70,20 +72,36 @@
 				var newRouteGroup = L.layerGroup().addTo(map)
 				newRouteGroup.addTo(map)
 				map.on('click', function (e) {
-					if (draw) {
+					if (draw && !drawFirst) {
 						var marker = L.marker(e.latlng, {
 							color: '#C80000',
 							draggable: true,
 							icon: circleRedIcon
 						}).addTo(newRouteGroup)
+						marker.on("drag", function (eDrag) {
+							var markerDrag = eDrag.target;
+							var latLngs = newRoute.getLatLngs()
+							latLngs[marker.options.index] = markerDrag.getLatLng();
+							newRoute.setLatLngs(latLngs)
+						});
+						// c.on("dragend", function (e) {
+						// 	var marker = e.target;
+						// 	var xhttp = new XMLHttpRequest();
+						// 	xhttp.open("POST", ip + "/route?keepIndex=true", true);
+						// 	xhttp.setRequestHeader("Content-type", "text/plain");
+						// 	xhttp.send(JSON.stringify(route.toGeoJSON()));
+						// });
+
 						// var marker = e.target;
-						var latLngs = routeNew.getLatLngs()
+						var latLngs = newRoute.getLatLngs()
 						latLngs.push(marker.getLatLng());
-						routeNew.setLatLngs(latLngs)
+						newRoute.setLatLngs(latLngs)
 						// newRouteGroup.getLayers().forEach(element =>
 						// 	console.log(element)
 						// );
-
+					}
+					else if (draw && drawFirst) {
+						drawFirst = false;
 					}
 				});
 
@@ -304,7 +322,34 @@
 				});
 				map.addControl(new refreshMapControler());
 
+				// var loadRoutes = L.Control.extend({
 
+				// 	options: {
+				// 		position: 'topleft',
+				// 		name: ""
+				// 	},
+
+				// 	container: null,
+
+				// 	onAdd: function (map) {
+				// 		container = L.DomUtil.create('p');
+				// 		container.type = "button";
+				// 		container.title = "Ladda rutter";
+
+				// 		container.style.backgroundColor = 'transparent';
+				// 		container.style.backgroundImage = "url(https://upload.wikimedia.org/wikipedia/commons/9/95/Folder-open.svg)";
+				// 		container.style.backgroundSize = "30px 30px";
+				// 		container.style.width = '30px';
+				// 		container.style.height = '30px';
+				// 		container.onclick = function (e) {
+				// 			console.log(port.getLatLng())
+
+				// 		}
+				// 		return container;
+				// 	}
+				// });
+
+				// map.addControl(new loadRoutes());
 
 				var drawControler = L.Control.extend({
 
@@ -331,14 +376,17 @@
 							document.getElementById('drawControler').style.backgroundColor = "lightgray";
 							draw = !draw;
 							if (draw == true) {
+								drawFirst = true;
 								latlngsNew = [];
-								routeNew.setLatLngs(latlngsNew)
-								routeNew.addTo(newRouteGroup)
+								newRoute.setLatLngs(latlngsNew)
+								newRoute.addTo(newRouteGroup)
+
 								document.getElementById('map').style.cursor = 'crosshair'
 								document.getElementById('drawControler').style.backgroundColor = "lightgray";
 							}
 							else {
-								newRouteGroup.clearLayers();
+								// newRouteGroup.clearLayers();
+
 								document.getElementById('map').style.cursor = ''
 								document.getElementById('drawControler').style.backgroundColor = "transparent";
 							}
@@ -362,22 +410,6 @@
 					opacity: 0.8
 				}).addTo(routeGroup);
 
-				var latlngsNew = [
-					[58.198395, 11.466894],
-					[58.198395, 11.466894]
-				];
-				var routeNew = L.polyline(latlngsNew, {
-					color: '#86000f',
-					weight: 5,
-					opacity: 0.8
-				}).addTo(newRouteGroup);
-
-				var path = L.polyline([], {
-					color: 'green',
-					weight: 3,
-					opacity: 0.8
-				}).addTo(map);
-
 				route.on('click', function (e) {
 					$.colorbox({
 						href: "route.html",
@@ -386,6 +418,36 @@
 						height: '80%'
 					});
 				});
+
+				var latlngsNew = [
+					[58.198395, 11.466894],
+					[58.198395, 11.466894]
+				];
+				var newRoute = L.polyline(latlngsNew, {
+					color: '#86000f',
+					weight: 5,
+					opacity: 0.8
+				}).addTo(newRouteGroup);
+				var newRouteSelected = null;
+				var newRoutePopup = null;
+				newRoute.on('click', function (e) {
+					if (!draw) {
+						newRoutePopup = L.popup()
+							.setLatLng(e.latlng)
+							.setContent('<button class="w3-button w3-light-grey" type="button" id="newRoute">Välj denna rutt</button>')
+							.openOn(map);
+						document.getElementById('newRoute').onclick = postnewRouteRoute;
+					}
+				});
+				// https://forum.ionicframework.com/t/button-is-not-working-on-leaflet-popup/134592
+
+
+				var path = L.polyline([], {
+					color: 'green',
+					weight: 3,
+					opacity: 0.8
+				}).addTo(map);
+
 
 				var circleIcon = new L.Icon({
 					iconUrl: 'images/full-moon.png',
@@ -538,6 +600,21 @@
 						}
 
 					}
+				}
+
+				function postnewRouteRoute() {
+					console.log(JSON.stringify(newRoute.toGeoJSON()))
+					var xhttp = new XMLHttpRequest();
+					xhttp.open("POST", ip + "/route?keepIndex=false", true);
+					xhttp.setRequestHeader("Content-type", "text/plain");
+					xhttp.onreadystatechange = function () {
+						refreshMap();
+						newRouteGroup.clearLayers();
+						newRoutePopup.removeFrom(map);
+					}
+					xhttp.send(JSON.stringify(newRoute.toGeoJSON()));
+
+
 				}
 
 				function refreshMap() {
