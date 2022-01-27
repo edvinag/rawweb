@@ -70,35 +70,24 @@
 					iconSize: new L.Point(15, 15)
 				});
 				var newRouteGroup = L.layerGroup().addTo(map)
-				newRouteGroup.addTo(map)
+				var newRouteMarkerGroup = L.layerGroup().addTo(map)
+				
 				map.on('click', function (e) {
 					if (draw && !drawFirst) {
 						var marker = L.marker(e.latlng, {
 							color: '#C80000',
 							draggable: true,
 							icon: circleRedIcon
-						}).addTo(newRouteGroup)
+						}).addTo(newRouteMarkerGroup)
 						marker.on("drag", function (eDrag) {
 							var markerDrag = eDrag.target;
 							var latLngs = newRoute.getLatLngs()
-							latLngs[marker.options.index] = markerDrag.getLatLng();
+							latLngs[newRouteMarkerGroup.getLayers().indexOf(markerDrag)] = markerDrag.getLatLng();
 							newRoute.setLatLngs(latLngs)
 						});
-						// c.on("dragend", function (e) {
-						// 	var marker = e.target;
-						// 	var xhttp = new XMLHttpRequest();
-						// 	xhttp.open("POST", ip + "/route?keepIndex=true", true);
-						// 	xhttp.setRequestHeader("Content-type", "text/plain");
-						// 	xhttp.send(JSON.stringify(route.toGeoJSON()));
-						// });
-
-						// var marker = e.target;
 						var latLngs = newRoute.getLatLngs()
 						latLngs.push(marker.getLatLng());
 						newRoute.setLatLngs(latLngs)
-						// newRouteGroup.getLayers().forEach(element =>
-						// 	console.log(element)
-						// );
 					}
 					else if (draw && drawFirst) {
 						drawFirst = false;
@@ -377,21 +366,16 @@
 							draw = !draw;
 							if (draw == true) {
 								drawFirst = true;
-								latlngsNew = [];
-								newRoute.setLatLngs(latlngsNew)
+								newRoute.setLatLngs([])
 								newRoute.addTo(newRouteGroup)
 
 								document.getElementById('map').style.cursor = 'crosshair'
 								document.getElementById('drawControler').style.backgroundColor = "lightgray";
 							}
 							else {
-								// newRouteGroup.clearLayers();
-
 								document.getElementById('map').style.cursor = ''
 								document.getElementById('drawControler').style.backgroundColor = "transparent";
 							}
-
-
 						}
 						return container;
 					}
@@ -418,12 +402,7 @@
 						height: '80%'
 					});
 				});
-
-				var latlngsNew = [
-					[58.198395, 11.466894],
-					[58.198395, 11.466894]
-				];
-				var newRoute = L.polyline(latlngsNew, {
+				var newRoute = L.polyline([], {
 					color: '#86000f',
 					weight: 5,
 					opacity: 0.8
@@ -610,6 +589,7 @@
 					xhttp.onreadystatechange = function () {
 						refreshMap();
 						newRouteGroup.clearLayers();
+						newRouteMarkerGroup.clearLayers()
 						newRoutePopup.removeFrom(map);
 					}
 					xhttp.send(JSON.stringify(newRoute.toGeoJSON()));
