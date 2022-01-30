@@ -366,9 +366,11 @@
 							draw = !draw;
 							if (draw == true) {
 								drawFirst = true;
+								newRouteGroup.clearLayers()
+								newRouteMarkerGroup.clearLayers()
 								newRoute.setLatLngs([])
 								newRoute.addTo(newRouteGroup)
-
+								
 								document.getElementById('map').style.cursor = 'crosshair'
 								document.getElementById('drawControler').style.backgroundColor = "lightgray";
 							}
@@ -480,6 +482,8 @@
 					xhttp.send(JSON.stringify(route.toGeoJSON()));
 				});
 
+				var onRouteGoal = L.circleMarker([57.57367, 11.92692]).addTo(routeGroup);
+
 				var goalDirection = L.polyline(latlngs, {
 					color: 'red',
 					weight: 5,
@@ -586,22 +590,21 @@
 				}
 
 				function postnewRouteRoute() {
-					route.setLatLngs(newRoute.getLatLngs());
-					addStepsFun();
-					newRouteGroup.clearLayers();
-					newRouteMarkerGroup.clearLayers()
-					newRoutePopup.removeFrom(map);
-					// var xhttp = new XMLHttpRequest();
-					// xhttp.open("POST", ip + "/route?keepIndex=false", true);
-					// xhttp.setRequestHeader("Content-type", "text/plain");
-					// xhttp.onreadystatechange = function () {
-					// 	// refreshMap();
-					// 	addStepsFun();
-					// 	newRouteGroup.clearLayers();
-					// 	newRouteMarkerGroup.clearLayers()
-					// 	newRoutePopup.removeFrom(map);
-					// }
-					// xhttp.send(JSON.stringify(newRoute.toGeoJSON()));
+					// route.setLatLngs(newRoute.getLatLngs());
+					// addStepsFun();
+					// newRouteGroup.clearLayers();
+					// newRouteMarkerGroup.clearLayers()
+					// newRoutePopup.removeFrom(map);
+					var xhttp = new XMLHttpRequest();
+					xhttp.open("POST", ip + "/route?keepIndex=false", true);
+					xhttp.setRequestHeader("Content-type", "text/plain");
+					xhttp.onreadystatechange = function () {
+						refreshMap();
+						newRouteGroup.clearLayers();
+						newRouteMarkerGroup.clearLayers()
+						newRoutePopup.removeFrom(map);
+					}
+					xhttp.send(JSON.stringify(newRoute.toGeoJSON()));
 				}
 
 				function addStepsFun() {
@@ -613,9 +616,8 @@
 							var point0 = element
 							var point1 = routeLatLngs[index + 1]
 
-							var dist = map.distance(routeLatLngs[0], routeLatLngs[1]);
+							var dist = map.distance(point0, point1);
 							var steps = Math.ceil(dist / 100);
-
 
 							var latScale = (point1['lat'] - point0['lat']) / steps
 							var lngScale = (point1['lng'] - point0['lng']) / steps
@@ -630,7 +632,6 @@
 					xhttp.setRequestHeader("Content-type", "text/plain");
 					xhttp.onreadystatechange = function () {
 						refreshMap();
-						routeGroup.clearLayers();
 						routePopUp.removeFrom(map);
 					}
 					console.log(JSON.stringify(route.toGeoJSON()))
@@ -643,6 +644,7 @@
 
 						if (this.readyState == 4 && this.status == 200) {
 							routeGroup.clearLayers();
+							onRouteGoal.addTo(routeGroup)
 							var obj = JSON.parse(this.responseText);
 							var array = []
 							var index = 0
@@ -720,7 +722,6 @@
 							else {
 								path.addLatLng([obj.data.gps.location.latitude, obj.data.gps.location.longitude])
 							}
-
 						}
 					};
 					xhttp.open("GET", ip + "/all", true);
@@ -738,6 +739,8 @@
 					if (obj.settings.controller.type == "route") {
 						goal.setLatLng([obj.settings.controller.reflocation.latitude, obj.settings.controller.reflocation.longitude])
 					}
+					
+					onRouteGoal.setLatLng(route.getLatLngs()[obj.settings.route.goalIndex])
 				}
 
 
