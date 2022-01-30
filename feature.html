@@ -94,13 +94,6 @@
 					}
 				});
 
-
-
-
-				// map.on("mouseover",function(){$('.leaflet-mouse-marker').css('cursor','crosshair');});
-
-				// map.on("mouseover",function(e){console.log(e)});
-
 				var hash = new L.Hash(map);
 
 				var positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
@@ -401,7 +394,6 @@
 					routePopUp = L.popup()
 						.setLatLng(e.latlng)
 						.setContent('<button class="w3-button w3-light-grey" style="width:100%" type="button" id="addSteps">Addera steg till rutt</button>')
-						// .setContent('<iframe frameBorder="0" id="iframe" src="./routeNew.html"></iframe>')
 						.openOn(map);
 					document.getElementById('addSteps').onclick = addStepsFun;
 				});
@@ -419,13 +411,11 @@
 							.setLatLng(e.latlng)
 
 							.setContent('<button class="w3-button w3-light-grey" style="width:100%" type="button" id="newRoute">Välj rutt</button>')
-							// .setContent('<iframe id="iframe" src="./route.html"></iframe>')
 							.openOn(map);
 						document.getElementById('newRoute').onclick = postnewRouteRoute;
 					}
 				});
 				// https://forum.ionicframework.com/t/button-is-not-working-on-leaflet-popup/134592
-
 
 				var path = L.polyline([], {
 					color: 'green',
@@ -739,11 +729,9 @@
 					if (obj.settings.controller.type == "route") {
 						goal.setLatLng([obj.settings.controller.reflocation.latitude, obj.settings.controller.reflocation.longitude])
 					}
-					
+
 					onRouteGoal.setLatLng(route.getLatLngs()[obj.settings.route.goalIndex])
 				}
-
-
 
 				loadAll();
 				var myVar = setInterval(loadAll, 1000);
