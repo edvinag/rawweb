@@ -4,7 +4,7 @@ var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m,
 });
 
 // Boat
-ip = "http://192.168.32.145"
+ip = "http://192.168.32.12"
 //ip = "http://192.168.8.112"
 
 // Lars
