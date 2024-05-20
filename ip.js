@@ -4,11 +4,11 @@ var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m,
 });
 
 // Boat
-ip = "http://192.168.32.12"
+//ip = "http://192.168.32.12"
 //ip = "http://192.168.8.112"
 
 // Lars
-//ip = "http://192.168.1.112"
+ip = "http://192.168.1.112"
 
 // if (vars['ip'] == "localhost") {
 //     ip = "http://127.0.0.1:5000"
