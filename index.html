@@ -638,7 +638,9 @@
 							var obj = JSON.parse(this.responseText);
 							var array = []
 							var index = 0
-							obj.geometry.coordinates.forEach(function (coordinate) {
+							if(obj != null)
+							{
+								obj.geometry.coordinates.forEach(function (coordinate) {
 								array.push([coordinate[1], coordinate[0]]);
 								var c = L.marker([coordinate[1], coordinate[0]], {
 									color: '#214F5D',
@@ -667,10 +669,12 @@
 									xhttp.send(JSON.stringify(route.toGeoJSON()));
 								});
 								index = index + 1;
-							});
-							route.setLatLngs(array);
-							route.addTo(routeGroup);
-							map.flyToBounds(route.getBounds())
+								});
+								route.setLatLngs(array);
+								route.addTo(routeGroup);
+								map.flyToBounds(route.getBounds())
+							}
+							
 						}
 					};
 					xhttpRoute.open("GET", ip + "/route", true);
@@ -721,13 +725,18 @@
 				function setBoat(obj) {
 					boat.setLatLng([obj.data.gps.location.latitude, obj.data.gps.location.longitude])
 					boat.setIconAngle(obj.data.gps.course)
-
-					goalDirection.setLatLngs([
+					
+					if(obj.settings.controller.reflocation.latitude != null)
+					{
+						goalDirection.setLatLngs([
 						[obj.data.gps.location.latitude, obj.data.gps.location.longitude],
 						[obj.settings.controller.reflocation.latitude, obj.settings.controller.reflocation.longitude]
-					]);
-					if (obj.settings.controller.type == "route") {
-						goal.setLatLng([obj.settings.controller.reflocation.latitude, obj.settings.controller.reflocation.longitude])
+						]);
+					
+					
+						if (obj.settings.controller.type == "route") {
+							goal.setLatLng([obj.settings.controller.reflocation.latitude, obj.settings.controller.reflocation.longitude])
+						}
 					}
 
 					onRouteGoal.setLatLng(route.getLatLngs()[obj.settings.route.goalIndex])
