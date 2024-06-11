@@ -50,6 +50,7 @@
 		//<![CDATA[
 		(function ($) {
 			$(function () {
+				findResponsiveIP()
 				var follow = false;
 				var draw = false;
 				var drawFirst = false;
@@ -383,6 +384,7 @@
 					[58.198395, 11.466894],
 					[58.198395, 11.466894]
 				];
+				var routeSet = false;
 				var route = L.polyline(latlngs, {
 					color: '#214F5D',
 					weight: 5,
@@ -695,26 +697,34 @@
 					var xhttp = new XMLHttpRequest();
 					xhttp.onreadystatechange = function () {
 						if (this.readyState == 4 && this.status == 200) {
-							var obj = JSON.parse(this.responseText);
-							setBoat(obj)
-
-							if (follow) {
-								map.flyTo(boat.getLatLng())
+							if(routeSet == false)
+							{
+								refreshMap();
+								routeSet = true;
 							}
+							else
+							{
+								var obj = JSON.parse(this.responseText);
+								setBoat(obj)
 
-							updateController(obj.settings.controller.type)
+								if (follow) {
+									map.flyTo(boat.getLatLng())
+								}
 
-							setDarkMode(obj.settings.rudder.darkMode)
+								updateController(obj.settings.controller.type)
 
-							if (path == null) {
-								path = L.polyline([[obj.data.gps.location.latitude, obj.data.gps.location.longitude]], {
-									color: 'white',
-									weight: 3,
-									opacity: 0.5
-								}).addTo(map);
-							}
-							else {
-								path.addLatLng([obj.data.gps.location.latitude, obj.data.gps.location.longitude])
+								setDarkMode(obj.settings.rudder.darkMode)
+
+								if (path == null) {
+									path = L.polyline([[obj.data.gps.location.latitude, obj.data.gps.location.longitude]], {
+										color: 'white',
+										weight: 3,
+										opacity: 0.5
+									}).addTo(map);
+								}
+								else {
+									path.addLatLng([obj.data.gps.location.latitude, obj.data.gps.location.longitude])
+								}
 							}
 						}
 					};
@@ -738,7 +748,6 @@
 							goal.setLatLng([obj.settings.controller.reflocation.latitude, obj.settings.controller.reflocation.longitude])
 						}
 					}
-
 					onRouteGoal.setLatLng(route.getLatLngs()[obj.settings.route.goalIndex])
 				}
 
