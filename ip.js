@@ -3,6 +3,7 @@ var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m,
     vars[key] = value;
 });
 
+ip = "http://192.168.86.112"
 
 function findResponsiveIP() {
     const ipList = [
