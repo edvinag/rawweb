@@ -43,11 +43,11 @@ function findResponsiveIP() {
             xhttp.send();
         });
 
-        // If no IP responds within 0.5 seconds, resolve with null
+        // If no IP responds within 5 seconds, resolve with null
         setTimeout(() => {
             if (!found) {
                 resolve(null);
             }
-        }, 500);
+        }, 5000);
     });
 }
