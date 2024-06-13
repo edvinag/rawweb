@@ -19,6 +19,7 @@
   <button class="button jsonButton buttonShadow" onclick="readCopy()">From Clipboard</button>
   <button class="button jsonButton buttonShadow" onclick="postSettings()">Upload Settings</button>
   <script>
+    findResponsiveIP();
     var obj = null
     var editorSettings = null
 
@@ -60,7 +61,15 @@
       xhttp.send(editorSettings.$container[0].outerText);
     }
 
-    load();
+    function waitForIPFound() {
+      return new Promise((resolve, reject) => {
+        (function waitForIP() {
+          if (ip_found) return resolve();
+          setTimeout(waitForIP, 100);
+        })();
+      });
+    }
+    waitForIPFound().then(load);
   </script>
 </body>
 
