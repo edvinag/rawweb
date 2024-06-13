@@ -28,6 +28,7 @@
 
   <pre id="json-display" style="width: 30%;"></pre>
   <script>
+    findResponsiveIP();
     var obj = null
     var editor = null
     function readCopy() {
@@ -58,7 +59,16 @@
       xhttp.setRequestHeader("Content-type", "text/plain");
       xhttp.send(editor.$container[0].outerText);
     }
-    loadRoute();
+
+    function waitForIPFound() {
+      return new Promise((resolve, reject) => {
+        (function waitForIP() {
+          if (ip_found) return resolve();
+          setTimeout(waitForIP, 100);
+        })();
+      });
+    }
+    waitForIPFound().then(loadRoute);
 
   </script>
 
