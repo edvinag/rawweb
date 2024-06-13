@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
   </head>
   <body>
-    <p>Drive API Quickstart _ 2</p>
+    <p>Drive API Quickstart _ 3</p>
 
     <!--Add buttons to initiate auth sequence and sign out-->
     <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
@@ -127,7 +127,18 @@
           //   'fields': 'files(id, name)',
           // });
           // 1SUs-A3jil_JXXDjURoLcUysifSdbp6w5
-          response = await gapi.client.drive.files("1SUs-A3jil_JXXDjURoLcUysifSdbp6w5");
+          gapi.client.load('drive', 'v2', function() {
+          var request = gapi.client.request({
+               path : '/drive/v2/files/1SUs-A3jil_JXXDjURoLcUysifSdbp6w5',
+               method : 'GET',
+               params : {
+                    projection: "FULL"
+               }
+          });
+          request.execute(function(response) {
+               console.log(response);   
+          });
+     });
           console.log(response);
         } catch (err) {
           document.getElementById('content').innerText = err.message;
