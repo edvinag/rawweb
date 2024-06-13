@@ -122,10 +122,13 @@
       async function listFiles() {
         let response;
         try {
-          response = await gapi.client.drive.files.list({
-            'pageSize': 10,
-            'fields': 'files(id, name)',
-          });
+          // response = await gapi.client.drive.files.list({
+          //   'pageSize': 10,
+          //   'fields': 'files(id, name)',
+          // });
+          // 1SUs-A3jil_JXXDjURoLcUysifSdbp6w5
+          response = await gapi.client.drive.files("1SUs-A3jil_JXXDjURoLcUysifSdbp6w5");
+          console.log(response);
         } catch (err) {
           document.getElementById('content').innerText = err.message;
           return;
