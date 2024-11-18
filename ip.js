@@ -8,10 +8,12 @@ ip_found = false;
 
 function findResponsiveIP() {
     const ipList = [
-        '192.168.32.112',
-        '192.168.86.112',
-        '192.168.1.112',
-        "127.0.0.1:5000"
+        'http://192.168.32.112',
+        'http://192.168.86.112',
+        'http://192.168.1.112',
+        "http://127.0.0.1:5000",
+        "http://localhost:9080",
+        "https://192.168.86.207"
         // Add more IPs as needed
     ];
 
@@ -30,7 +32,7 @@ function findResponsiveIP() {
                             found = true;
                             ip_found = true;
                             console.log(`Found responsive IP: ${_ip}`);
-                            ip = `http://${_ip}`
+                            ip = `${_ip}`
                             resolve(_ip);
                         }
                     }
@@ -39,7 +41,7 @@ function findResponsiveIP() {
             xhttp.onerror = function () {
                 // Do nothing, the IP did not respond
             };
-            xhttp.open("GET", `http://${_ip}/all`, true);
+            xhttp.open("GET", `${_ip}/all`, true);
             xhttp.send();
         });
 
