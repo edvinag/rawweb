@@ -9,6 +9,7 @@ ip_found = false;
 function findResponsiveIP() {
     const ipList = [
         'http://esp32-raw-server.local',
+        'http://esp32-raw-server-sim.local',
         'http://192.168.32.112',
         'http://192.168.86.112',
         'http://192.168.1.112',
